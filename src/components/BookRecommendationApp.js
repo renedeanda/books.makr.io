@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy, Check, Edit } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,8 @@ const BookRecommendationApp = () => {
   const [isAddToListOpen, setIsAddToListOpen] = useState(false);
   const [bookToAdd, setBookToAdd] = useState(null);
 
+  const searchParamsRef = useRef();
+
   const genres = [
     "Fiction", "Non-Fiction", "Mystery", "Science Fiction", "Fantasy", "Romance", "Thriller",
     "Horror", "Historical Fiction", "Biography", "Autobiography", "Memoir", "Poetry", "Drama",
@@ -50,11 +52,17 @@ const BookRecommendationApp = () => {
 
   const handleSearchParamsChange = (searchParams) => {
     const initialQuery = searchParams.get('q');
-    if (initialQuery) {
+    if (initialQuery && initialQuery !== query) {
       setQuery(initialQuery);
       fetchBooks(0, initialQuery);
     }
   };
+
+  useEffect(() => {
+    if (searchParamsRef.current) {
+      handleSearchParamsChange(searchParamsRef.current);
+    }
+  }, [searchParamsRef.current]);
 
   useEffect(() => {
     const savedReadingLists = JSON.parse(localStorage.getItem('readingLists')) || { default: [] };
@@ -229,10 +237,8 @@ const BookRecommendationApp = () => {
     <Suspense fallback={<div>Loading...</div>}>
       <SearchParamsWrapper>
         {(searchParams) => {
-          useEffect(() => {
-            handleSearchParamsChange(searchParams);
-          }, [searchParams]);
-
+          searchParamsRef.current = searchParams;
+          
           return (
             <div className={`container mx-auto p-4 ${isDarkMode ? 'dark' : ''}`}>
               <nav className="flex justify-between items-center mb-4">
@@ -336,7 +342,7 @@ const BookRecommendationApp = () => {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                                      </div>
+                  </div>
                 </div>
                 <TabsContent value="search">
                   {books.length > 0 ? (
