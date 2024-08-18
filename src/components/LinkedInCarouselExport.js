@@ -9,19 +9,21 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
 
   const generatePdf = async () => {
     const doc = new jsPDF({
+      orientation: 'portrait',
       unit: 'px',
-      format: 'a4',
+      format: [1080, 1080], // Square format
       hotfixes: ['px_scaling']
     });
 
     const noCoverSvg = `
-      <svg width="150" height="220" xmlns="http://www.w3.org/2000/svg">
+      <svg xmlns="http://www.w3.org/2000/svg" width="150" height="220" viewBox="0 0 150 220">
         <rect width="150" height="220" fill="#e4e4e4" />
-        <text x="50%" y="50%" font-family="Arial" font-size="18" fill="#999999" text-anchor="middle" alignment-baseline="middle">
+        <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="12" fill="#999999" text-anchor="middle" alignment-baseline="middle">
           No cover available
         </text>
       </svg>
     `;
+    const noCoverImage = `data:image/svg+xml;base64,${btoa(noCoverSvg)}`;
 
     for (let index = 0; index < readingList.length; index++) {
       const book = readingList[index];
@@ -29,7 +31,7 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
       
       if (bookElement) {
         doc.setFillColor(255, 236, 211);
-        doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+        doc.rect(0, 0, 1080, 1080, 'F');
 
         doc.setTextColor('#e67e22');
         doc.setFontSize(48);
@@ -42,12 +44,11 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
         doc.setFontSize(36);
         doc.text(book.title, 100, 180);
 
-        const bookCover = bookElement.querySelector('img');
-        let imageData = '';
+        let imageData = noCoverImage;
 
+        const bookCover = bookElement.querySelector('img');
         if (bookCover && bookCover.src) {
           try {
-            // Create a canvas element to extract the image data
             const imageCanvas = document.createElement('canvas');
             const imageContext = imageCanvas.getContext('2d');
             imageCanvas.width = bookCover.naturalWidth;
@@ -59,16 +60,15 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
           }
         }
 
-        if (!imageData) {
-          // Fallback to "No cover available" SVG if no image data
-          imageData = `data:image/svg+xml;base64,${btoa(noCoverSvg)}`;
-        }
-
-        doc.addImage(imageData, 'JPEG', 100, 200, 150, 220);
+        doc.addImage(imageData, 'JPEG', 100, 250, 300, 450); // Adjusted for square layout
 
         doc.setFontSize(24);
-        doc.text(`Author: ${book.author_name?.[0] || 'Unknown'}`, 100, 450);
-        doc.text(`First Published: ${book.first_publish_year || 'Unknown'}`, 100, 490);
+        doc.text(`Author: ${book.author_name?.[0] || 'Unknown'}`, 100, 750);
+        doc.text(`First Published: ${book.first_publish_year || 'Unknown'}`, 100, 790);
+
+        doc.setFontSize(18);
+        doc.setTextColor('#e67e22');
+        doc.text("Made with ❤️ by books.makr.io", 100, 1020); // Attribution footer
 
         if (index < readingList.length - 1) {
           doc.addPage();
