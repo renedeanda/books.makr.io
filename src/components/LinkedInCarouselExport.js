@@ -16,9 +16,9 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
     });
 
     const noCoverSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="150" height="220" viewBox="0 0 150 220">
-        <rect width="150" height="220" fill="#e4e4e4" />
-        <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="12" fill="#999999" text-anchor="middle" alignment-baseline="middle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
+        <rect width="300" height="450" fill="#e4e4e4" />
+        <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="24" fill="#999999" text-anchor="middle" alignment-baseline="middle">
           No cover available
         </text>
       </svg>
@@ -70,14 +70,16 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
       doc.setFontSize(24);
       doc.text(`${index + 1} of ${readingList.length}`, 540, 130, { align: "center" });
 
-      doc.setFontSize(36);
-      doc.text(book.title, 540, 200, { align: "center" });
+      // Image on the left
+      doc.addImage(imageData, 'JPEG', 80, 300, 300, 450);
 
-      doc.addImage(imageData, 'JPEG', 190, 300, 300, 450); // Centered Image
+      // Text on the right
+      doc.setFontSize(36);
+      doc.text(book.title, 450, 400);
 
       doc.setFontSize(24);
-      doc.text(`Author: ${book.author_name?.[0] || 'Unknown'}`, 540, 790, { align: "center" });
-      doc.text(`First Published: ${book.first_publish_year || 'Unknown'}`, 540, 830, { align: "center" });
+      doc.text(`Author: ${book.author_name?.[0] || 'Unknown'}`, 450, 450);
+      doc.text(`First Published: ${book.first_publish_year || 'Unknown'}`, 450, 500);
 
       doc.setFontSize(24);
       doc.setTextColor('#e67e22');
