@@ -1,27 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-
-const BookRecommendationApp = dynamic(() => import('@/components/BookRecommendationApp'), {
-  ssr: false,
-});
-
-export default function Home() {
-  return (
-    <main className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
-      <BookRecommendationApp />
-    </main>
-  );
-}
-
-```
-
-
-2. Now, let's update `components/BookRecommendationApp.js`:
-
-```javascript
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy, Check, Edit } from 'lucide-react';
