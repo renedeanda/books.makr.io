@@ -40,6 +40,7 @@ const BookRecommendationApp = () => {
   const [newListName, setNewListName] = useState('');
   const [isAddToListOpen, setIsAddToListOpen] = useState(false);
   const [bookToAdd, setBookToAdd] = useState(null);
+  const contentRef = useRef(); // Reference to the content section
 
   const searchParamsRef = useRef();
 
@@ -194,7 +195,7 @@ const BookRecommendationApp = () => {
         <div className="space-y-4">
           <p>Find more about this author:</p>
           <div className="flex space-x-2">
-            <Button onClick={() => window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(author)}`, '_blank')}>
+                        <Button onClick={() => window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(author)}`, '_blank')}>
               Wikipedia
             </Button>
             <Button onClick={() => window.open(`https://www.goodreads.com/search?q=${encodeURIComponent(author)}`, '_blank')}>
@@ -238,9 +239,9 @@ const BookRecommendationApp = () => {
       <SearchParamsWrapper>
         {(searchParams) => {
           searchParamsRef.current = searchParams;
-          
+
           return (
-            <div className={`container mx-auto p-4 max-w-full ${isDarkMode ? 'dark' : ''}`}>
+            <div className={`container mx-auto p-4 max-w-full ${isDarkMode ? 'dark' : ''}`} ref={contentRef}>
               <nav className="flex flex-col sm:flex-row justify-between items-center mb-4">
                 <a href="https://rede.io/?utm_source=books" className="font-bold hover:underline text-center sm:text-left">
                   Check out 📚 Rede.io for your daily tech newsletter!
@@ -326,7 +327,7 @@ const BookRecommendationApp = () => {
                     <Button onClick={handleCreateNewList} className="w-full sm:w-auto"><PlusCircle className="mr-2" />New List</Button>
                     <Dialog open={renameListDialog} onOpenChange={setRenameListDialog}>
                       <DialogTrigger asChild>
-                                                <Button variant="outline" className="w-full sm:w-auto"><Edit className="mr-2" />Rename List</Button>
+                        <Button variant="outline" className="w-full sm:w-auto"><Edit className="mr-2" />Rename List</Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
@@ -351,7 +352,7 @@ const BookRecommendationApp = () => {
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {books.filter(filterBooks).map((book) => (
-                          <Card key={book.key} className="flex flex-col">
+                          <Card key={book.key} id={`book-${book.key}`} className="flex flex-col">
                             <CardHeader>
                               <CardTitle className="line-clamp-2">{book.title}</CardTitle>
                             </CardHeader>
@@ -366,7 +367,6 @@ const BookRecommendationApp = () => {
                                 <div>
                                   <p className="line-clamp-2">Author: {book.author_name?.join(', ') || 'Unknown'}</p>
                                   <p>First Published: {book.first_publish_year || 'Unknown'}</p>
-                                  <p className="line-clamp-2">Genre: {book.subject?.slice(0, 3).join(', ') || 'Unknown'}</p>
                                 </div>
                               </div>
                             </CardContent>
@@ -415,7 +415,7 @@ const BookRecommendationApp = () => {
                   {readingLists[currentList]?.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {readingLists[currentList].map((book) => (
-                        <Card key={book.key} className="flex flex-col">
+                        <Card key={book.key} id={`book-${book.key}`} className="flex flex-col">
                           <CardHeader>
                             <CardTitle className="line-clamp-2">{book.title}</CardTitle>
                           </CardHeader>
