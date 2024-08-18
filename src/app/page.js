@@ -1,12 +1,15 @@
-import { Suspense } from 'react';
-import BookRecommendationWrapper from '@/components/BookRecommendationWrapper';
+'use client';
 
-export default function Home({ searchParams }) {
+import dynamic from 'next/dynamic';
+
+const BookRecommendationApp = dynamic(() => import('@/components/BookRecommendationApp'), {
+  ssr: false,
+});
+
+export default function Home() {
   return (
     <main className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
-      <Suspense fallback={<div>Loading...</div>}>
-        <BookRecommendationWrapper initialQuery={searchParams.q || ''} />
-      </Suspense>
+      <BookRecommendationApp />
     </main>
   );
 }
