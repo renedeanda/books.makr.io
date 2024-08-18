@@ -106,7 +106,7 @@ const BookRecommendationApp = () => {
                   description: (
                     <div className="flex items-center">
                       <Check className="mr-2 text-green-500" />
-                      <span>"{book.title}" has been added to your "{selectedList}" reading list.</span>
+                      <span>&quot;{book.title}&quot; has been added to your &quot;{selectedList}&quot; reading list.</span>
                     </div>
                   ),
                 });
@@ -128,7 +128,7 @@ const BookRecommendationApp = () => {
     localStorage.setItem('readingLists', JSON.stringify(updatedLists));
     toast({
       title: "Book Removed",
-      description: `"${book.title}" has been removed from your ${currentList} reading list.`,
+      description: `&quot;{book.title}&quot; has been removed from your ${currentList} reading list.`,
     });
   };
 
@@ -150,7 +150,7 @@ const BookRecommendationApp = () => {
       localStorage.setItem('readingLists', JSON.stringify(updatedLists));
       toast({
         title: "List Renamed",
-        description: `"${currentList}" has been renamed to "${newListName}".`,
+        description: `&quot;${currentList}&quot; has been renamed to &quot;${newListName}&quot;.`,
       });
       setRenameListDialog(false);
       setNewListName('');
@@ -167,7 +167,7 @@ const BookRecommendationApp = () => {
 
   const handleShareReadingList = () => {
     const currentReadingList = readingLists[currentList] || [];
-    const shareText = `Check out my \"${currentList}\" reading list:\n\n${currentReadingList.map(book => `- "${book.title}" by ${book.author_name?.[0] || 'Unknown'} (${book.first_publish_year || 'Unknown'})`).join('\n')}\n\nCreated with books.makr.io`;
+    const shareText = `Check out my &quot;${currentList}&quot; reading list:\n\n${currentReadingList.map(book => `- &quot;${book.title}&quot; by ${book.author_name?.[0] || 'Unknown'} (${book.first_publish_year || 'Unknown'})`).join('\n')}\n\nCreated with books.makr.io`;
 
     navigator.clipboard.writeText(shareText).then(() => {
       toast({
@@ -209,7 +209,7 @@ const BookRecommendationApp = () => {
         </div>
       </DialogContent>
     </Dialog>
-  );
+      );
 
   const BookAvailability = ({ book }) => (
     <Dialog>
@@ -218,7 +218,7 @@ const BookRecommendationApp = () => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Where to find "{book.title}"</DialogTitle>
+          <DialogTitle>Where to find &quot;{book.title}&quot;</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
           <a href={`https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author_name?.[0])}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
@@ -410,7 +410,7 @@ const BookRecommendationApp = () => {
                   <CardHeader>
                     <CardTitle className="line-clamp-2">{book.title}</CardTitle>
                   </CardHeader>
-                  <CardContent className="flex-grow">
+                                  <CardContent className="flex-grow">
                     <div className="flex items-center space-x-4 mb-4">
                       <img
                         src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
