@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy, Check, Edit } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,23 +12,9 @@ import { useTheme } from './ThemeContext';
 import { useToast } from "@/components/ui/use-toast";
 import LinkedInCarouselExport from './LinkedInCarouselExport';
 import ReactPaginate from 'react-paginate';
-import { useSearchParams } from 'next/navigation';
 
-const MySearchComponent = ({ onQueryChange }) => {
-  const searchParams = useSearchParams();
-  const query = searchParams.get('q') || '';
-
-  useEffect(() => {
-    if (onQueryChange) {
-      onQueryChange(query);
-    }
-  }, [query, onQueryChange]);
-
-  return null; // This component doesn't render anything by itself
-};
-
-const BookRecommendationApp = () => {
-  const [query, setQuery] = useState('');
+const BookRecommendationApp = ({ initialQuery = '' }) => {
+  const [query, setQuery] = useState(initialQuery);
   const [books, setBooks] = useState([]);
   const [readingLists, setReadingLists] = useState({ default: [] });
   const [currentList, setCurrentList] = useState('default');
@@ -46,6 +32,8 @@ const BookRecommendationApp = () => {
   const [selectedList, setSelectedList] = useState('');
   const [renameListDialog, setRenameListDialog] = useState(false);
   const [newListName, setNewListName] = useState('');
+  const [isAddToListOpen, setIsAddToListOpen] = useState(false);
+  const [bookToAdd, setBookToAdd] = useState(null);
 
   const genres = [
     "Fiction", "Non-Fiction", "Mystery", "Science Fiction", "Fantasy", "Romance", "Thriller",
@@ -82,57 +70,31 @@ const BookRecommendationApp = () => {
   };
 
   const handleAddToReadingList = (book) => {
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="w-full">
-            <BookmarkPlus className="mr-2" /> Add to List
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add &quot;{book.title}&quot; to Reading List</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p>Choose a reading list to add the book to:</p>
-            <Select onValueChange={setSelectedList}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a list" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.keys(readingLists).map(listName => (
-                  <SelectItem key={listName} value={listName}>{listName}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    setBookToAdd(book);
+    setIsAddToListOpen(true);
+  };
+
+  const confirmAddToReadingList = () => {
+    if (selectedList && bookToAdd) {
+      const updatedLists = {
+        ...readingLists,
+        [selectedList]: [...(readingLists[selectedList] || []), bookToAdd]
+      };
+      setReadingLists(updatedLists);
+      localStorage.setItem('readingLists', JSON.stringify(updatedLists));
+      toast({
+        title: "Book Added",
+        description: (
+          <div className="flex items-center">
+            <Check className="mr-2 text-green-500" />
+            <span>&quot;{bookToAdd.title}&quot; has been added to your &quot;{selectedList}&quot; reading list.</span>
           </div>
-          <DialogFooter>
-            <Button onClick={() => {
-              if (selectedList) {
-                const updatedLists = {
-                  ...readingLists,
-                  [selectedList]: [...(readingLists[selectedList] || []), book]
-                };
-                setReadingLists(updatedLists);
-                localStorage.setItem('readingLists', JSON.stringify(updatedLists));
-                toast({
-                  title: "Book Added",
-                  description: (
-                    <div className="flex items-center">
-                      <Check className="mr-2 text-green-500" />
-                      <span>&quot;{book.title}&quot; has been added to your &quot;{selectedList}&quot; reading list.</span>
-                    </div>
-                  ),
-                });
-                setSelectedList('');
-              }
-            }} disabled={!selectedList}>
-              Confirm
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
+        ),
+      });
+      setSelectedList('');
+      setIsAddToListOpen(false);
+      setBookToAdd(null);
+    }
   };
 
   const handleRemoveFromReadingList = (book) => {
@@ -142,7 +104,7 @@ const BookRecommendationApp = () => {
     localStorage.setItem('readingLists', JSON.stringify(updatedLists));
     toast({
       title: "Book Removed",
-      description: `&quot;{book.title}&quot; has been removed from your ${currentList} reading list.`,
+      description: `"${book.title}" has been removed from your ${currentList} reading list.`,
     });
   };
 
@@ -164,7 +126,7 @@ const BookRecommendationApp = () => {
       localStorage.setItem('readingLists', JSON.stringify(updatedLists));
       toast({
         title: "List Renamed",
-        description: `&quot;${currentList}&quot; has been renamed to &quot;${newListName}&quot;.`,
+        description: `"${currentList}" has been renamed to "${newListName}".`,
       });
       setRenameListDialog(false);
       setNewListName('');
@@ -181,7 +143,7 @@ const BookRecommendationApp = () => {
 
   const handleShareReadingList = () => {
     const currentReadingList = readingLists[currentList] || [];
-    const shareText = `Check out my &quot;${currentList}&quot; reading list:\n\n${currentReadingList.map(book => `- &quot;${book.title}&quot; by ${book.author_name?.[0] || 'Unknown'} (${book.first_publish_year || 'Unknown'})`).join('\n')}\n\nCreated with books.makr.io`;
+    const shareText = `Check out my "${currentList}" reading list:\n\n${currentReadingList.map(book => `- "${book.title}" by ${book.author_name?.[0] || 'Unknown'} (${book.first_publish_year || 'Unknown'})`).join('\n')}\n\nCreated with books.makr.io`;
 
     navigator.clipboard.writeText(shareText).then(() => {
       toast({
@@ -212,7 +174,7 @@ const BookRecommendationApp = () => {
           <div className="flex space-x-2">
             <Button onClick={() => window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(author)}`, '_blank')}>
               Wikipedia
-                        </Button>
+            </Button>
             <Button onClick={() => window.open(`https://www.goodreads.com/search?q=${encodeURIComponent(author)}`, '_blank')}>
               Goodreads
             </Button>
@@ -251,9 +213,6 @@ const BookRecommendationApp = () => {
 
   return (
     <div className={`container mx-auto p-4 ${isDarkMode ? 'dark' : ''}`}>
-      <Suspense fallback={<div>Loading application...</div>}>
-        <MySearchComponent onQueryChange={setQuery} />
-      </Suspense>
       <nav className="flex justify-between items-center mb-4">
         <a href="https://rede.io/?utm_source=books" className="font-bold hover:underline">
           Check out 📚 Rede.io for your daily tech newsletter!
@@ -289,7 +248,7 @@ const BookRecommendationApp = () => {
           </SelectTrigger>
           <SelectContent>
             {genres.map(g => (
-                         <SelectItem key={g} value={g.toLowerCase()}>{g}</SelectItem>
+              <SelectItem key={g} value={g.toLowerCase()}>{g}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -370,7 +329,7 @@ const BookRecommendationApp = () => {
                       <div className="flex items-center space-x-4 mb-4">
                         <img
                           src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
-                          alt={`Cover of ${book.title}`}
+                           alt={`Cover of ${book.title}`}
                           className="w-24 h-36 object-cover"
                           onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book-cover.jpg' }}
                         />
@@ -382,7 +341,9 @@ const BookRecommendationApp = () => {
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-2">
-                      {handleAddToReadingList(book)}
+                      <Button className="w-full" onClick={() => handleAddToReadingList(book)}>
+                        <BookmarkPlus className="mr-2" /> Add to List
+                      </Button>
                       <div className="flex gap-2 w-full">
                         <AuthorSpotlight author={book.author_name?.[0]} />
                         <BookAvailability book={book} />
@@ -461,6 +422,32 @@ const BookRecommendationApp = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isAddToListOpen} onOpenChange={setIsAddToListOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add &quot;{bookToAdd?.title}&quot; to Reading List</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>Choose a reading list to add the book to:</p>
+            <Select onValueChange={setSelectedList}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a list" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(readingLists).map(listName => (
+                  <SelectItem key={listName} value={listName}>{listName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button onClick={confirmAddToReadingList} disabled={!selectedList}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <footer className="mt-8 text-center text-sm text-gray-500">
         <p className="mt-4">
