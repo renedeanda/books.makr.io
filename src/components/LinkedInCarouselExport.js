@@ -15,24 +15,33 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
       node.style.flexDirection = 'column';
       node.style.justifyContent = 'space-between';
       node.style.alignItems = 'center';
-      node.style.backgroundColor = '#fff';
+      node.style.backgroundColor = '#fdf6e3';
       node.style.padding = '50px';
       node.style.boxSizing = 'border-box';
-      node.style.fontFamily = 'Arial, sans-serif';
+      node.style.fontFamily = "'Poppins', sans-serif";
       node.style.color = '#2c3e50';
+      node.style.border = '10px solid #eee';
+      node.style.borderRadius = '20px';
+      node.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
       
-      // Directly use cover image URL
       const coverUrl = book.cover_i 
         ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg` 
-        : '/placeholder-book-cover.jpg';
+        : `data:image/svg+xml;base64,${btoa(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="320" height="480" viewBox="0 0 320 480">
+            <rect width="100%" height="100%" fill="#eeeeee"/>
+            <text x="50%" y="50%" fill="#cccccc" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" alignment-baseline="middle">
+              No Cover
+            </text>
+          </svg>
+        `)}`;
       
       node.innerHTML = `
         <div style="text-align: center; width: 100%;">
-          <h1 style="font-size: 60px; margin-bottom: 20px;">${listName}</h1>
+          <h1 style="font-size: 60px; margin-bottom: 20px; color: #ff6600;">${listName}</h1>
           <h2 style="font-size: 40px; margin-bottom: 20px;">${index + 1} of ${readingList.length}</h2>
         </div>
         <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
-          <img src="${coverUrl}" alt="Book cover" style="width: 320px; height: 480px; object-fit: cover; margin-right: 40px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
+          <img src="${coverUrl}" alt="Book cover" style="width: 320px; height: 480px; object-fit: cover; margin-right: 40px; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
           <div style="text-align: left; max-width: 600px;">
             <h3 style="font-size: 50px; margin-bottom: 20px;">${book.title}</h3>
             <p style="font-size: 36px; margin-bottom: 10px;">by ${book.author_name?.[0] || 'Unknown'}</p>
@@ -45,7 +54,7 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
       `;
 
       document.body.appendChild(node);
-      const image = await toPng(node);
+      const image = await toPng(node, { cacheBust: true });
       document.body.removeChild(node);
       return image;
     }));
