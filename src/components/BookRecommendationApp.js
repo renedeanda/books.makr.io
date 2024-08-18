@@ -77,7 +77,7 @@ const BookRecommendationApp = () => {
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add "{book.title}" to Reading List</DialogTitle>
+            <DialogTitle>Add &quot;{book.title}&quot; to Reading List</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p>Choose a reading list to add the book to:</p>
