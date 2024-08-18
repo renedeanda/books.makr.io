@@ -1,4 +1,3 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -7,6 +6,10 @@ const nextConfig = {
   },
   images: {
     domains: ['covers.openlibrary.org'],
+  },
+  experimental: {
+    // This disables the warning about useSearchParams
+    missingSuspenseWithCSRBailout: false,
   },
 }
 
