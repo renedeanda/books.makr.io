@@ -26,14 +26,7 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
       
       const coverUrl = book.cover_i 
         ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg` 
-        : `data:image/svg+xml;base64,${btoa(`
-          <svg xmlns="http://www.w3.org/2000/svg" width="320" height="480" viewBox="0 0 320 480">
-            <rect width="100%" height="100%" fill="#eeeeee"/>
-            <text x="50%" y="50%" fill="#cccccc" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" alignment-baseline="middle">
-              No Cover
-            </text>
-          </svg>
-        `)}`;
+        : null;  // No cover URL, we'll use inline SVG instead
       
       node.innerHTML = `
         <div style="text-align: center; width: 100%;">
@@ -41,7 +34,15 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
           <h2 style="font-size: 40px; margin-bottom: 20px;">${index + 1} of ${readingList.length}</h2>
         </div>
         <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
-          <img src="${coverUrl}" alt="Book cover" style="width: 320px; height: 480px; object-fit: cover; margin-right: 40px; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
+          ${coverUrl 
+            ? `<img src="${coverUrl}" alt="Book cover" style="width: 320px; height: 480px; object-fit: cover; margin-right: 40px; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">`
+            : `<svg width="320" height="480" xmlns="http://www.w3.org/2000/svg" style="margin-right: 40px; border-radius: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
+                <rect width="100%" height="100%" fill="#eeeeee"/>
+                <text x="50%" y="50%" fill="#cccccc" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" alignment-baseline="middle">
+                  No Cover
+                </text>
+              </svg>`
+          }
           <div style="text-align: left; max-width: 600px;">
             <h3 style="font-size: 50px; margin-bottom: 20px;">${book.title}</h3>
             <p style="font-size: 36px; margin-bottom: 10px;">by ${book.author_name?.[0] || 'Unknown'}</p>
