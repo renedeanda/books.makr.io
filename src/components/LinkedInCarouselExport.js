@@ -2,19 +2,29 @@
 
 import React from 'react';
 import { jsPDF } from 'jspdf';
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import { Image } from 'lucide-react';
 
 const LinkedInCarouselExport = ({ readingList, listName }) => {
 
-  const generatePdf = () => {
+  const generatePdf = async () => {
     const doc = new jsPDF({
       unit: 'px',
       format: 'a4',
       hotfixes: ['px_scaling']
     });
 
-    readingList.forEach((book, index) => {
+    const noCoverSvg = `
+      <svg width="150" height="220" xmlns="http://www.w3.org/2000/svg">
+        <rect width="150" height="220" fill="#e4e4e4" />
+        <text x="50%" y="50%" font-family="Arial" font-size="18" fill="#999999" text-anchor="middle" alignment-baseline="middle">
+          No cover available
+        </text>
+      </svg>
+    `;
+
+    for (let index = 0; index < readingList.length; index++) {
+      const book = readingList[index];
       const bookElement = document.getElementById(`book-${book.key}`);
       
       if (bookElement) {
@@ -33,12 +43,26 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
         doc.text(book.title, 100, 180);
 
         const bookCover = bookElement.querySelector('img');
-        const imageCanvas = document.createElement('canvas');
-        const imageContext = imageCanvas.getContext('2d');
-        imageCanvas.width = bookCover.naturalWidth;
-        imageCanvas.height = bookCover.naturalHeight;
-        imageContext.drawImage(bookCover, 0, 0, imageCanvas.width, imageCanvas.height);
-        const imageData = imageCanvas.toDataURL('image/jpeg');
+        let imageData = '';
+
+        if (bookCover && bookCover.src) {
+          try {
+            // Create a canvas element to extract the image data
+            const imageCanvas = document.createElement('canvas');
+            const imageContext = imageCanvas.getContext('2d');
+            imageCanvas.width = bookCover.naturalWidth;
+            imageCanvas.height = bookCover.naturalHeight;
+            imageContext.drawImage(bookCover, 0, 0, imageCanvas.width, imageCanvas.height);
+            imageData = imageCanvas.toDataURL('image/jpeg');
+          } catch (error) {
+            console.error("Failed to capture the image:", error);
+          }
+        }
+
+        if (!imageData) {
+          // Fallback to "No cover available" SVG if no image data
+          imageData = `data:image/svg+xml;base64,${btoa(noCoverSvg)}`;
+        }
 
         doc.addImage(imageData, 'JPEG', 100, 200, 150, 220);
 
@@ -50,7 +74,7 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
           doc.addPage();
         }
       }
-    });
+    }
 
     doc.save(`${listName}_reading_list.pdf`);
   };
