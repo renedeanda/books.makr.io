@@ -222,13 +222,13 @@ const BookRecommendationApp = () => {
         </DialogHeader>
         <div className="space-y-2">
           <a href={`https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author_name?.[0])}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
-            <img src="/amazon-icon.png" alt="Amazon" className="w-6 h-6 mr-2" /> Search on Amazon
+            Search on Amazon
           </a>
           <a href={`https://www.barnesandnoble.com/s/${encodeURIComponent(book.title + ' ' + book.author_name?.[0])}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
-            <img src="/bn-icon.png" alt="Barnes & Noble" className="w-6 h-6 mr-2" /> Search on Barnes & Noble
+            Search on Barnes & Noble
           </a>
           <a href={`https://www.worldcat.org/search?q=${encodeURIComponent(book.title)}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
-            <img src="/library-icon.png" alt="Library" className="w-6 h-6 mr-2" /> Find in a library near you
+            Find in a library near you
           </a>
         </div>
       </DialogContent>
