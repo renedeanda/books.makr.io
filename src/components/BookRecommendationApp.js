@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy } from 'lucide-react';
+import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy, Check, Edit } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTheme } from './ThemeContext';
 import { useToast } from "@/components/ui/use-toast"
@@ -16,7 +16,7 @@ import ReactPaginate from 'react-paginate';
 const BookRecommendationApp = () => {
   const [query, setQuery] = useState('');
   const [books, setBooks] = useState([]);
-  const [readingLists, setReadingLists] = useState({ default: [] });
+  const [readingLists, setReadingLists] = useState({default: []});
   const [currentList, setCurrentList] = useState('default');
   const [genre, setGenre] = useState('');
   const [author, setAuthor] = useState('');
@@ -29,6 +29,16 @@ const BookRecommendationApp = () => {
   const booksPerPage = 9;
   const [activeTab, setActiveTab] = useState('search');
   const maxPages = 3;
+  const [selectedList, setSelectedList] = useState('');
+  const [renameListDialog, setRenameListDialog] = useState(false);
+  const [newListName, setNewListName] = useState('');
+
+  const genres = [
+    "Fiction", "Non-Fiction", "Mystery", "Science Fiction", "Fantasy", "Romance", "Thriller",
+    "Horror", "Historical Fiction", "Biography", "Autobiography", "Memoir", "Poetry", "Drama",
+    "Adventure", "Young Adult", "Children's", "Dystopian", "Humor", "Self-Help", "Travel",
+    "True Crime", "Philosophy", "Psychology", "Science", "History", "Politics", "Art", "Music"
+  ];
 
   useEffect(() => {
     const savedReadingLists = JSON.parse(localStorage.getItem('readingLists')) || { default: [] };
@@ -36,7 +46,11 @@ const BookRecommendationApp = () => {
   }, []);
 
   const fetchBooks = async (page = 0) => {
-    const response = await fetch(`https://openlibrary.org/search.json?q=${query}&limit=${booksPerPage}&offset=${page * booksPerPage}`);
+    let url = `https://openlibrary.org/search.json?q=${query}&limit=${booksPerPage}&offset=${page * booksPerPage}`;
+    if (genre) {
+      url += `&subject=${encodeURIComponent(genre)}`;
+    }
+    const response = await fetch(url);
     const data = await response.json();
     setBooks(data.docs);
     setTotalPages(Math.min(maxPages, Math.ceil(data.numFound / booksPerPage)));
@@ -54,38 +68,60 @@ const BookRecommendationApp = () => {
   };
 
   const handleAddToReadingList = (book) => {
-    const dialogContent = (
-      <div>
-        <h3 className="mb-4">Choose a reading list to add the book to:</h3>
-        <Select onValueChange={(listName) => {
-          const updatedLists = {
-            ...readingLists,
-            [listName]: [...(readingLists[listName] || []), book]
-          };
-          setReadingLists(updatedLists);
-          localStorage.setItem('readingLists', JSON.stringify(updatedLists));
-          toast({
-            title: "Book Added",
-            description: `"${book.title}" has been added to your ${listName} reading list.`,
-          });
-        }}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a list" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.keys(readingLists).map(listName => (
-              <SelectItem key={listName} value={listName}>{listName}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    const [isOpen, setIsOpen] = useState(false);
+  
+    return (
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button className="w-full">
+            <BookmarkPlus className="mr-2" /> Add to List
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add "{book.title}" to Reading List</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>Choose a reading list to add the book to:</p>
+            <Select onValueChange={setSelectedList}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a list" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(readingLists).map(listName => (
+                  <SelectItem key={listName} value={listName}>{listName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => {
+              if (selectedList) {
+                const updatedLists = {
+                  ...readingLists,
+                  [selectedList]: [...(readingLists[selectedList] || []), book]
+                };
+                setReadingLists(updatedLists);
+                localStorage.setItem('readingLists', JSON.stringify(updatedLists));
+                toast({
+                  title: "Book Added",
+                  description: (
+                    <div className="flex items-center">
+                      <Check className="mr-2 text-green-500" />
+                      <span>"{book.title}" has been added to your "{selectedList}" reading list.</span>
+                    </div>
+                  ),
+                });
+                setSelectedList('');
+                setIsOpen(false);  // Close the dialog
+              }
+            }} disabled={!selectedList}>
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
-
-    toast({
-      title: "Add to Reading List",
-      description: dialogContent,
-      duration: 5000,
-    });
   };
 
   const handleRemoveFromReadingList = (book) => {
@@ -107,9 +143,25 @@ const BookRecommendationApp = () => {
     }
   };
 
+  const handleRenameList = () => {
+    if (newListName && newListName !== currentList) {
+      const updatedLists = { ...readingLists };
+      updatedLists[newListName] = updatedLists[currentList];
+      delete updatedLists[currentList];
+      setReadingLists(updatedLists);
+      setCurrentList(newListName);
+      localStorage.setItem('readingLists', JSON.stringify(updatedLists));
+      toast({
+        title: "List Renamed",
+        description: `"${currentList}" has been renamed to "${newListName}".`,
+      });
+      setRenameListDialog(false);
+      setNewListName('');
+    }
+  };
+
   const filterBooks = (book) => {
     return (
-      (!genre || book.subject?.includes(genre)) &&
       (!author || book.author_name?.includes(author)) &&
       (!yearFrom || book.first_publish_year >= parseInt(yearFrom)) &&
       (!yearTo || book.first_publish_year <= parseInt(yearTo))
@@ -194,7 +246,7 @@ const BookRecommendationApp = () => {
           {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
         </Button>
       </nav>
-
+      
       <form onSubmit={handleSearch} className="mb-4 flex gap-2">
         <Input
           type="text"
@@ -212,10 +264,9 @@ const BookRecommendationApp = () => {
             <SelectValue placeholder="Select Genre" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="fiction">Fiction</SelectItem>
-            <SelectItem value="non-fiction">Non-Fiction</SelectItem>
-            <SelectItem value="mystery">Mystery</SelectItem>
-            <SelectItem value="science-fiction">Science Fiction</SelectItem>
+            {genres.map(g => (
+              <SelectItem key={g} value={g.toLowerCase()}>{g}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -262,6 +313,24 @@ const BookRecommendationApp = () => {
               </SelectContent>
             </Select>
             <Button onClick={handleCreateNewList}><PlusCircle className="mr-2" />New List</Button>
+            <Dialog open={renameListDialog} onOpenChange={setRenameListDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline"><Edit className="mr-2" />Rename List</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Rename List</DialogTitle>
+                </DialogHeader>
+                <Input
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  placeholder="Enter new list name"
+                />
+                <DialogFooter>
+                  <Button onClick={handleRenameList}>Confirm</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         <TabsContent value="search">
@@ -289,9 +358,7 @@ const BookRecommendationApp = () => {
                       </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-2">
-                      <Button onClick={() => handleAddToReadingList(book)} className="w-full">
-                        <BookmarkPlus className="mr-2" /> Add to List
-                      </Button>
+                      {handleAddToReadingList(book)}
                       <div className="flex gap-2 w-full">
                         <AuthorSpotlight author={book.author_name?.[0]} />
                         <BookAvailability book={book} />
@@ -370,7 +437,7 @@ const BookRecommendationApp = () => {
           )}
         </TabsContent>
       </Tabs>
-
+      
       <footer className="mt-8 text-center text-sm text-gray-500">
         Created with <a href="https://books.makr.io" className="underline">books.makr.io</a>
       </footer>
