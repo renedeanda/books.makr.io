@@ -42,7 +42,7 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
         doc.text(`${index + 1} of ${readingList.length}`, 100, 130);
 
         doc.setFontSize(36);
-        doc.text(book.title, 100, 180);
+        doc.text(book.title, 100, 200);
 
         let imageData = noCoverImage;
 
@@ -68,7 +68,7 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
 
         doc.setFontSize(18);
         doc.setTextColor('#e67e22');
-        doc.text("Made with ❤️ by books.makr.io", 100, 1020); // Attribution footer
+        doc.text("Made with books.makr.io", 100, 1020); // Simplified attribution footer
 
         if (index < readingList.length - 1) {
           doc.addPage();
