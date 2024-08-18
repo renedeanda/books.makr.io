@@ -16,7 +16,7 @@ import ReactPaginate from 'react-paginate';
 const BookRecommendationApp = () => {
   const [query, setQuery] = useState('');
   const [books, setBooks] = useState([]);
-  const [readingLists, setReadingLists] = useState({default: []});
+  const [readingLists, setReadingLists] = useState({ default: [] });
   const [currentList, setCurrentList] = useState('default');
   const [genre, setGenre] = useState('');
   const [author, setAuthor] = useState('');
@@ -68,10 +68,8 @@ const BookRecommendationApp = () => {
   };
 
   const handleAddToReadingList = (book) => {
-    const [isOpen, setIsOpen] = useState(false);
-  
     return (
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog>
         <DialogTrigger asChild>
           <Button className="w-full">
             <BookmarkPlus className="mr-2" /> Add to List
@@ -113,7 +111,6 @@ const BookRecommendationApp = () => {
                   ),
                 });
                 setSelectedList('');
-                setIsOpen(false);  // Close the dialog
               }
             }} disabled={!selectedList}>
               Confirm
@@ -241,12 +238,22 @@ const BookRecommendationApp = () => {
   return (
     <div className={`container mx-auto p-4 ${isDarkMode ? 'dark' : ''}`}>
       <nav className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">Book Recommendations</h1>
+        <a href="https://rede.io/?utm_source=books" className="font-bold hover:underline">
+          Check out 📚 Rede.io for your daily tech newsletter!
+        </a>
         <Button onClick={toggleTheme} variant="ghost">
           {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
         </Button>
       </nav>
-      
+      <div className="flex justify-center items-center p-6 flex-grow">
+        <header className="text-center">
+          <h1 className="text-4xl font-extrabold">Book Recommendations</h1>
+          <p className="text-xl mt-4">
+            Crafted with 🧡 + 🤖 by <a href="https://renedeanda.com/?utm_source=books" className="text-amber-500 hover:underline">René DeAnda</a>
+          </p>
+        </header>
+      </div>
+
       <form onSubmit={handleSearch} className="mb-4 flex gap-2">
         <Input
           type="text"
@@ -437,9 +444,11 @@ const BookRecommendationApp = () => {
           )}
         </TabsContent>
       </Tabs>
-      
+
       <footer className="mt-8 text-center text-sm text-gray-500">
-        Created with <a href="https://books.makr.io" className="underline">books.makr.io</a>
+        <p className="mt-4">
+          Crafted with 🧡 + 🤖 by René
+        </p>
       </footer>
     </div>
   );
