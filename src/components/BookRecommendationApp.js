@@ -167,7 +167,7 @@ const BookRecommendationApp = () => {
 
   const handleShareReadingList = () => {
     const currentReadingList = readingLists[currentList] || [];
-    const shareText = `Check out my "${currentList}" reading list:\n\n${currentReadingList.map(book => `- "${book.title}" by ${book.author_name?.[0] || 'Unknown'} (${book.first_publish_year || 'Unknown'})`).join('\n')}\n\nCreated with books.makr.io`;
+    const shareText = `Check out my \"${currentList}\" reading list:\n\n${currentReadingList.map(book => `- "${book.title}" by ${book.author_name?.[0] || 'Unknown'} (${book.first_publish_year || 'Unknown'})`).join('\n')}\n\nCreated with books.makr.io`;
 
     navigator.clipboard.writeText(shareText).then(() => {
       toast({
