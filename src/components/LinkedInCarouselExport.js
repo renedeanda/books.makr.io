@@ -1,13 +1,20 @@
 'use client';
 
 import React from 'react';
-import { toPng } from 'html-to-image';
+import { jsPDF } from 'jspdf';
 import { Button } from "@/components/ui/button";
 import { Image } from 'lucide-react';
 
 const LinkedInCarouselExport = ({ readingList, listName }) => {
-  const generateCarouselImages = async () => {
-    const images = await Promise.all(readingList.map(async (book, index) => {
+  const generatePDF = async () => {
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: [1080, 1080],
+    });
+
+    for (let i = 0; i < readingList.length; i++) {
+      const book = readingList[i];
       const bookElement = document.getElementById(`book-${book.key}`);
       
       if (bookElement) {
@@ -38,7 +45,7 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
         node.innerHTML = `
           <div style="text-align: center; width: 100%;">
             <h1 style="font-size: 60px; margin-bottom: 20px; color: #ff6600;">${listName}</h1>
-            <h2 style="font-size: 40px; margin-bottom: 20px;">${index + 1} of ${readingList.length}</h2>
+            <h2 style="font-size: 40px; margin-bottom: 20px;">${i + 1} of ${readingList.length}</h2>
           </div>
           <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
           </div>
@@ -49,28 +56,24 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
         node.querySelector('div:nth-child(2)').appendChild(bookClone);
 
         document.body.appendChild(node);
-        const image = await toPng(node, { cacheBust: true });
+
+        const canvas = await html2canvas(node);
+        const imgData = canvas.toDataURL('image/png');
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imgData, 'PNG', 0, 0, 1080, 1080);
+
         document.body.removeChild(node);
-        return image;
       }
-    }));
+    }
 
-    // Create a zip file containing all images
-    const JSZip = (await import('jszip')).default;
-    const zip = new JSZip();
-    images.forEach((image, index) => {
-      zip.file(`carousel_image_${index + 1}.png`, image.split('base64,')[1], { base64: true });
-    });
-
-    const content = await zip.generateAsync({ type: "blob" });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(content);
-    link.download = `${listName}_linkedin_carousel.zip`;
-    link.click();
+    // Save the PDF
+    pdf.save(`${listName}_linkedin_carousel.pdf`);
   };
 
   return (
-    <Button onClick={generateCarouselImages} disabled={readingList.length === 0}>
+    <Button onClick={generatePDF} disabled={readingList.length === 0}>
       <Image className="mr-2" /> Export for LinkedIn
     </Button>
   );
