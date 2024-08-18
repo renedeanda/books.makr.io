@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy, Check, Edit } from 'lucide-react';
+import { Search, BookOpen, Sun, Moon, PlusCircle, Copy, Check, Edit, User, ShoppingCart, Trash2, BookmarkPlus } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -120,7 +120,7 @@ const BookRecommendationApp = () => {
   };
 
   const handleRemoveFromReadingList = (book) => {
-    const updatedList = readingLists[currentList].filter(b => b.key !== book.key);
+        const updatedList = readingLists[currentList].filter(b => b.key !== book.key);
     const updatedLists = { ...readingLists, [currentList]: updatedList };
     setReadingLists(updatedLists);
     localStorage.setItem('readingLists', JSON.stringify(updatedLists));
@@ -240,38 +240,38 @@ const BookRecommendationApp = () => {
           searchParamsRef.current = searchParams;
           
           return (
-            <div className={`container mx-auto p-4 ${isDarkMode ? 'dark' : ''}`}>
-              <nav className="flex justify-between items-center mb-4">
-                <a href="https://rede.io/?utm_source=books" className="font-bold hover:underline">
+            <div className={`container mx-auto p-4 max-w-full ${isDarkMode ? 'dark' : ''}`}>
+              <nav className="flex flex-col sm:flex-row justify-between items-center mb-4">
+                <a href="https://rede.io/?utm_source=books" className="font-bold hover:underline text-center sm:text-left">
                   Check out 📚 Rede.io for your daily tech newsletter!
                 </a>
-                <Button onClick={toggleTheme} variant="ghost">
+                <Button onClick={toggleTheme} variant="ghost" className="mt-2 sm:mt-0">
                   {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
                 </Button>
               </nav>
               <div className="flex justify-center items-center p-6 flex-grow">
-                <header className="text-center">
-                  <h1 className="text-4xl font-extrabold">Book Recommendations</h1>
-                  <p className="text-xl mt-4">
+                <header className="text-center px-4">
+                  <h1 className="text-2xl sm:text-4xl font-extrabold">Book Recommendations</h1>
+                  <p className="text-lg sm:text-xl mt-4">
                     Crafted with 🧡 + 🤖 by <a href="https://renedeanda.com/?utm_source=books" className="text-amber-500 hover:underline">René DeAnda</a>
                   </p>
                 </header>
               </div>
 
-              <form onSubmit={handleSearch} className="mb-4 flex gap-2">
+              <form onSubmit={handleSearch} className="mb-4 flex flex-col sm:flex-row gap-2">
                 <Input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search for books..."
-                  className="flex-grow"
+                  className="w-full sm:flex-grow"
                 />
-                <Button type="submit"><Search className="mr-2" />Search</Button>
+                <Button type="submit" className="w-full sm:w-auto"><Search className="mr-2" />Search</Button>
               </form>
 
-              <div className="mb-4 flex gap-2 flex-wrap">
+              <div className="mb-4 flex flex-col sm:flex-row gap-2">
                 <Select onValueChange={setGenre}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Select Genre" />
                   </SelectTrigger>
                   <SelectContent>
@@ -286,7 +286,7 @@ const BookRecommendationApp = () => {
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
                   placeholder="Filter by author"
-                  className="w-[180px]"
+                  className="w-full sm:w-[180px]"
                 />
 
                 <Input
@@ -294,7 +294,7 @@ const BookRecommendationApp = () => {
                   value={yearFrom}
                   onChange={(e) => setYearFrom(e.target.value)}
                   placeholder="Year from"
-                  className="w-[120px]"
+                  className="w-full sm:w-[120px]"
                 />
 
                 <Input
@@ -302,19 +302,19 @@ const BookRecommendationApp = () => {
                   value={yearTo}
                   onChange={(e) => setYearTo(e.target.value)}
                   placeholder="Year to"
-                  className="w-[120px]"
+                  className="w-full sm:w-[120px]"
                 />
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
                   <TabsList>
                     <TabsTrigger value="search">Search Results</TabsTrigger>
                     <TabsTrigger value="reading-list">Reading List</TabsTrigger>
                   </TabsList>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-center gap-2 mt-2 sm:mt-0">
                     <Select value={currentList} onValueChange={setCurrentList}>
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-full sm:w-[180px]">
                         <SelectValue placeholder="Select Reading List" />
                       </SelectTrigger>
                       <SelectContent>
@@ -323,10 +323,10 @@ const BookRecommendationApp = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <Button onClick={handleCreateNewList}><PlusCircle className="mr-2" />New List</Button>
+                    <Button onClick={handleCreateNewList} className="w-full sm:w-auto"><PlusCircle className="mr-2" />New List</Button>
                     <Dialog open={renameListDialog} onOpenChange={setRenameListDialog}>
                       <DialogTrigger asChild>
-                        <Button variant="outline"><Edit className="mr-2" />Rename List</Button>
+                                                <Button variant="outline" className="w-full sm:w-auto"><Edit className="mr-2" />Rename List</Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
@@ -336,18 +336,20 @@ const BookRecommendationApp = () => {
                           value={newListName}
                           onChange={(e) => setNewListName(e.target.value)}
                           placeholder="Enter new list name"
+                          className="w-full"
                         />
                         <DialogFooter>
-                          <Button onClick={handleRenameList}>Confirm</Button>
+                          <Button onClick={handleRenameList} className="w-full sm:w-auto">Confirm</Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
                   </div>
                 </div>
+
                 <TabsContent value="search">
                   {books.length > 0 ? (
                     <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {books.filter(filterBooks).map((book) => (
                           <Card key={book.key} className="flex flex-col">
                             <CardHeader>
@@ -399,18 +401,19 @@ const BookRecommendationApp = () => {
                     </div>
                   )}
                 </TabsContent>
+
                 <TabsContent value="reading-list">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Current Reading List: {currentList}</h2>
-                    <div className="flex gap-2">
-                      <Button onClick={handleShareReadingList}>
+                    <div className="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0">
+                      <Button onClick={handleShareReadingList} className="w-full sm:w-auto">
                         <Copy className="mr-2" /> Copy List
                       </Button>
                       <LinkedInCarouselExport readingList={readingLists[currentList] || []} listName={currentList} />
                     </div>
                   </div>
                   {readingLists[currentList]?.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {readingLists[currentList].map((book) => (
                         <Card key={book.key} className="flex flex-col">
                           <CardHeader>
@@ -470,14 +473,14 @@ const BookRecommendationApp = () => {
                     </Select>
                   </div>
                   <DialogFooter>
-                    <Button onClick={confirmAddToReadingList} disabled={!selectedList}>
+                    <Button onClick={confirmAddToReadingList} className="w-full" disabled={!selectedList}>
                       Confirm
                     </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
 
-              <footer className="mt-8 text-center text-sm text-gray-500">
+              <footer className="mt-8 text-center text-sm text-gray-500 px-4">
                 <p className="mt-4">
                   Crafted with 🧡 + 🤖 by René
                 </p>
