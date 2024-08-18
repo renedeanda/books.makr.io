@@ -1,17 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy, Check, Edit } from 'lucide-react';
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from './ThemeContext';
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/components/ui/use-toast";
 import LinkedInCarouselExport from './LinkedInCarouselExport';
 import ReactPaginate from 'react-paginate';
+import { useSearchParams } from 'next/navigation';
+
+const MySearchComponent = ({ onQueryChange }) => {
+  const searchParams = useSearchParams();
+  const query = searchParams.get('q') || '';
+
+  useEffect(() => {
+    if (onQueryChange) {
+      onQueryChange(query);
+    }
+  }, [query, onQueryChange]);
+
+  return null; // This component doesn't render anything by itself
+};
 
 const BookRecommendationApp = () => {
   const [query, setQuery] = useState('');
@@ -198,7 +212,7 @@ const BookRecommendationApp = () => {
           <div className="flex space-x-2">
             <Button onClick={() => window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(author)}`, '_blank')}>
               Wikipedia
-            </Button>
+                        </Button>
             <Button onClick={() => window.open(`https://www.goodreads.com/search?q=${encodeURIComponent(author)}`, '_blank')}>
               Goodreads
             </Button>
@@ -209,7 +223,7 @@ const BookRecommendationApp = () => {
         </div>
       </DialogContent>
     </Dialog>
-      );
+  );
 
   const BookAvailability = ({ book }) => (
     <Dialog>
@@ -237,6 +251,9 @@ const BookRecommendationApp = () => {
 
   return (
     <div className={`container mx-auto p-4 ${isDarkMode ? 'dark' : ''}`}>
+      <Suspense fallback={<div>Loading application...</div>}>
+        <MySearchComponent onQueryChange={setQuery} />
+      </Suspense>
       <nav className="flex justify-between items-center mb-4">
         <a href="https://rede.io/?utm_source=books" className="font-bold hover:underline">
           Check out 📚 Rede.io for your daily tech newsletter!
@@ -272,7 +289,7 @@ const BookRecommendationApp = () => {
           </SelectTrigger>
           <SelectContent>
             {genres.map(g => (
-              <SelectItem key={g} value={g.toLowerCase()}>{g}</SelectItem>
+                         <SelectItem key={g} value={g.toLowerCase()}>{g}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -410,7 +427,7 @@ const BookRecommendationApp = () => {
                   <CardHeader>
                     <CardTitle className="line-clamp-2">{book.title}</CardTitle>
                   </CardHeader>
-                                  <CardContent className="flex-grow">
+                  <CardContent className="flex-grow">
                     <div className="flex items-center space-x-4 mb-4">
                       <img
                         src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
