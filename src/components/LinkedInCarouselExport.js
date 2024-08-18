@@ -64,24 +64,24 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
 
       doc.setTextColor('#e67e22');
       doc.setFontSize(48);
-      doc.text(`${listName}`, 100, 80);
+      doc.text(`${listName}`, 540, 80, { align: "center" });
 
       doc.setTextColor('#333');
       doc.setFontSize(24);
-      doc.text(`${index + 1} of ${readingList.length}`, 100, 130);
+      doc.text(`${index + 1} of ${readingList.length}`, 540, 130, { align: "center" });
 
       doc.setFontSize(36);
-      doc.text(book.title, 100, 200);
+      doc.text(book.title, 540, 200, { align: "center" });
 
-      doc.addImage(imageData, 'JPEG', 100, 250, 300, 450); // Adjusted for square layout
+      doc.addImage(imageData, 'JPEG', 190, 300, 300, 450); // Centered Image
 
       doc.setFontSize(24);
-      doc.text(`Author: ${book.author_name?.[0] || 'Unknown'}`, 100, 750);
-      doc.text(`First Published: ${book.first_publish_year || 'Unknown'}`, 100, 790);
+      doc.text(`Author: ${book.author_name?.[0] || 'Unknown'}`, 540, 790, { align: "center" });
+      doc.text(`First Published: ${book.first_publish_year || 'Unknown'}`, 540, 830, { align: "center" });
 
-      doc.setFontSize(18);
+      doc.setFontSize(24);
       doc.setTextColor('#e67e22');
-      doc.text("Made with books.makr.io", 100, 1020); // Simplified attribution footer
+      doc.text("Made with books.makr.io", 540, 980, { align: "center" }); // Larger, centered attribution footer
 
       if (index < readingList.length - 1) {
         doc.addPage();
