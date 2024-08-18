@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { Button } from "@/components/ui/button";
 import { Image } from 'lucide-react';
 
@@ -34,7 +35,6 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
         node.style.borderRadius = '20px';
         node.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
 
-        // Clone the existing book DOM element and use it for export
         const bookClone = bookElement.cloneNode(true);
         bookClone.style.width = '320px';
         bookClone.style.height = '480px';
@@ -57,8 +57,10 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
 
         document.body.appendChild(node);
 
+        // Capture the content as an image
         const canvas = await html2canvas(node);
         const imgData = canvas.toDataURL('image/png');
+
         if (i > 0) {
           pdf.addPage();
         }
