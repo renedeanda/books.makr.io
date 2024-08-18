@@ -1,6 +1,29 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+
+const BookRecommendationApp = dynamic(() => import('@/components/BookRecommendationApp'), {
+  ssr: false,
+});
+
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
+      <BookRecommendationApp />
+    </main>
+  );
+}
+
+```
+
+
+2. Now, let's update `components/BookRecommendationApp.js`:
+
+```javascript
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy, Check, Edit } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,8 +36,9 @@ import { useToast } from "@/components/ui/use-toast";
 import LinkedInCarouselExport from './LinkedInCarouselExport';
 import ReactPaginate from 'react-paginate';
 
-const BookRecommendationApp = ({ initialQuery = '' }) => {
-  const [query, setQuery] = useState(initialQuery);
+const BookRecommendationApp = () => {
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState('');
   const [books, setBooks] = useState([]);
   const [readingLists, setReadingLists] = useState({ default: [] });
   const [currentList, setCurrentList] = useState('default');
@@ -43,12 +67,17 @@ const BookRecommendationApp = ({ initialQuery = '' }) => {
   ];
 
   useEffect(() => {
+    const initialQuery = searchParams.get('q');
+    if (initialQuery) {
+      setQuery(initialQuery);
+      fetchBooks(0, initialQuery);
+    }
     const savedReadingLists = JSON.parse(localStorage.getItem('readingLists')) || { default: [] };
     setReadingLists(savedReadingLists);
   }, []);
 
-  const fetchBooks = async (page = 0) => {
-    let url = `https://openlibrary.org/search.json?q=${query}&limit=${booksPerPage}&offset=${page * booksPerPage}`;
+  const fetchBooks = async (page = 0, searchQuery = query) => {
+    let url = `https://openlibrary.org/search.json?q=${searchQuery}&limit=${booksPerPage}&offset=${page * booksPerPage}`;
     if (genre) {
       url += `&subject=${encodeURIComponent(genre)}`;
     }
@@ -104,7 +133,7 @@ const BookRecommendationApp = ({ initialQuery = '' }) => {
     localStorage.setItem('readingLists', JSON.stringify(updatedLists));
     toast({
       title: "Book Removed",
-      description: `"${book.title}" has been removed from your ${currentList} reading list.`,
+      description: `&quot;${book.title}&quot; has been removed from your ${currentList} reading list.`,
     });
   };
 
@@ -126,7 +155,7 @@ const BookRecommendationApp = ({ initialQuery = '' }) => {
       localStorage.setItem('readingLists', JSON.stringify(updatedLists));
       toast({
         title: "List Renamed",
-        description: `"${currentList}" has been renamed to "${newListName}".`,
+        description: `&quot;${currentList}&quot; has been renamed to &quot;${newListName}&quot;.`,
       });
       setRenameListDialog(false);
       setNewListName('');
@@ -305,7 +334,7 @@ const BookRecommendationApp = ({ initialQuery = '' }) => {
                   <DialogTitle>Rename List</DialogTitle>
                 </DialogHeader>
                 <Input
-                  value={newListName}
+                     value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
                   placeholder="Enter new list name"
                 />
@@ -329,7 +358,7 @@ const BookRecommendationApp = ({ initialQuery = '' }) => {
                       <div className="flex items-center space-x-4 mb-4">
                         <img
                           src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
-                           alt={`Cover of ${book.title}`}
+                          alt={`Cover of ${book.title}`}
                           className="w-24 h-36 object-cover"
                           onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book-cover.jpg' }}
                         />
@@ -458,4 +487,4 @@ const BookRecommendationApp = ({ initialQuery = '' }) => {
   );
 };
 
-export default BookRecommendationApp;
+export default BookRecommendationApp;rget
