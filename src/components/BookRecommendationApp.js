@@ -1,8 +1,7 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2 } from 'lucide-react';
+import { Search, BookOpen, Save, Sun, Moon, Star, BookmarkPlus, Share2, User, ShoppingCart, PlusCircle, Image, Trash2, ExternalLink, Copy } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,18 +16,19 @@ import ReactPaginate from 'react-paginate';
 const BookRecommendationApp = () => {
   const [query, setQuery] = useState('');
   const [books, setBooks] = useState([]);
-  const [readingLists, setReadingLists] = useState({default: []});
+  const [readingLists, setReadingLists] = useState({ default: [] });
   const [currentList, setCurrentList] = useState('default');
   const [genre, setGenre] = useState('');
   const [author, setAuthor] = useState('');
   const [yearFrom, setYearFrom] = useState('');
   const [yearTo, setYearTo] = useState('');
-  const [selectedAuthor, setSelectedAuthor] = useState(null);
   const { isDarkMode, toggleTheme } = useTheme();
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const booksPerPage = 9;
+  const [activeTab, setActiveTab] = useState('search');
+  const maxPages = 3;
 
   useEffect(() => {
     const savedReadingLists = JSON.parse(localStorage.getItem('readingLists')) || { default: [] };
@@ -39,7 +39,7 @@ const BookRecommendationApp = () => {
     const response = await fetch(`https://openlibrary.org/search.json?q=${query}&limit=${booksPerPage}&offset=${page * booksPerPage}`);
     const data = await response.json();
     setBooks(data.docs);
-    setTotalPages(Math.ceil(data.numFound / booksPerPage));
+    setTotalPages(Math.min(maxPages, Math.ceil(data.numFound / booksPerPage)));
   };
 
   const handleSearch = (e) => {
@@ -54,15 +54,37 @@ const BookRecommendationApp = () => {
   };
 
   const handleAddToReadingList = (book) => {
-    const updatedLists = {
-      ...readingLists,
-      [currentList]: [...(readingLists[currentList] || []), book]
-    };
-    setReadingLists(updatedLists);
-    localStorage.setItem('readingLists', JSON.stringify(updatedLists));
+    const dialogContent = (
+      <div>
+        <h3 className="mb-4">Choose a reading list to add the book to:</h3>
+        <Select onValueChange={(listName) => {
+          const updatedLists = {
+            ...readingLists,
+            [listName]: [...(readingLists[listName] || []), book]
+          };
+          setReadingLists(updatedLists);
+          localStorage.setItem('readingLists', JSON.stringify(updatedLists));
+          toast({
+            title: "Book Added",
+            description: `"${book.title}" has been added to your ${listName} reading list.`,
+          });
+        }}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select a list" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.keys(readingLists).map(listName => (
+              <SelectItem key={listName} value={listName}>{listName}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+
     toast({
-      title: "Book Added",
-      description: `"${book.title}" has been added to your ${currentList} reading list.`,
+      title: "Add to Reading List",
+      description: dialogContent,
+      duration: 5000,
     });
   };
 
@@ -113,33 +135,28 @@ const BookRecommendationApp = () => {
     });
   };
 
-  const fetchAuthorInfo = async (authorName) => {
-    const response = await fetch(`https://openlibrary.org/search/authors.json?q=${authorName}`);
-    const data = await response.json();
-    if (data.docs.length > 0) {
-      setSelectedAuthor(data.docs[0]);
-    }
-  };
-
   const AuthorSpotlight = ({ author }) => (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline"><User className="mr-2" />Author Info</Button>
+        <Button variant="outline" className="w-full"><User className="mr-2" />Author Info</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{author}</DialogTitle>
         </DialogHeader>
-        <div>
-          {selectedAuthor ? (
-            <>
-              <p>Birth Date: {selectedAuthor.birth_date || 'Unknown'}</p>
-              <p>Top Work: {selectedAuthor.top_work || 'N/A'}</p>
-              <p>Work Count: {selectedAuthor.work_count || 'Unknown'}</p>
-            </>
-          ) : (
-            <p>Loading author information...</p>
-          )}
+        <div className="space-y-4">
+          <p>Find more about this author:</p>
+          <div className="flex space-x-2">
+            <Button onClick={() => window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(author)}`, '_blank')}>
+              Wikipedia
+            </Button>
+            <Button onClick={() => window.open(`https://www.goodreads.com/search?q=${encodeURIComponent(author)}`, '_blank')}>
+              Goodreads
+            </Button>
+            <Button onClick={() => window.open(`https://www.perplexity.ai/search?q=${encodeURIComponent(author)}`, '_blank')}>
+              Perplexity
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -148,16 +165,22 @@ const BookRecommendationApp = () => {
   const BookAvailability = ({ book }) => (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline"><ShoppingCart className="mr-2" />Where to Buy</Button>
+        <Button variant="outline" className="w-full"><ShoppingCart className="mr-2" />Where to Buy</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Where to find "{book.title}"</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
-          <a href={`https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author_name?.[0])}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline block">Search on Amazon</a>
-          <a href={`https://www.barnesandnoble.com/s/${encodeURIComponent(book.title + ' ' + book.author_name?.[0])}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline block">Search on Barnes & Noble</a>
-          <a href={`https://www.worldcat.org/search?q=${encodeURIComponent(book.title)}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline block">Find in a library near you</a>
+          <a href={`https://www.amazon.com/s?k=${encodeURIComponent(book.title + ' ' + book.author_name?.[0])}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
+            <img src="/amazon-icon.png" alt="Amazon" className="w-6 h-6 mr-2" /> Search on Amazon
+          </a>
+          <a href={`https://www.barnesandnoble.com/s/${encodeURIComponent(book.title + ' ' + book.author_name?.[0])}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
+            <img src="/bn-icon.png" alt="Barnes & Noble" className="w-6 h-6 mr-2" /> Search on Barnes & Noble
+          </a>
+          <a href={`https://www.worldcat.org/search?q=${encodeURIComponent(book.title)}`} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-500 hover:underline">
+            <img src="/library-icon.png" alt="Library" className="w-6 h-6 mr-2" /> Find in a library near you
+          </a>
         </div>
       </DialogContent>
     </Dialog>
@@ -167,28 +190,11 @@ const BookRecommendationApp = () => {
     <div className={`container mx-auto p-4 ${isDarkMode ? 'dark' : ''}`}>
       <nav className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold">Book Recommendations</h1>
-        <div className="flex items-center gap-2">
-          <Select value={currentList} onValueChange={setCurrentList}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select Reading List" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(readingLists).map(listName => (
-                <SelectItem key={listName} value={listName}>{listName}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={handleCreateNewList}><PlusCircle className="mr-2" />New List</Button>
-          <Button onClick={handleShareReadingList}>
-            <Share2 className="mr-2" /> Share List
-          </Button>
-          <LinkedInCarouselExport readingList={readingLists[currentList] || []} listName={currentList} />
-          <Button onClick={toggleTheme} variant="ghost">
-            {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
-          </Button>
-        </div>
+        <Button onClick={toggleTheme} variant="ghost">
+          {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+        </Button>
       </nav>
-      
+
       <form onSubmit={handleSearch} className="mb-4 flex gap-2">
         <Input
           type="text"
@@ -238,11 +244,26 @@ const BookRecommendationApp = () => {
         />
       </div>
 
-      <Tabs defaultValue="search" className="w-full">
-        <TabsList>
-          <TabsTrigger value="search">Search Results</TabsTrigger>
-          <TabsTrigger value="reading-list">Reading List</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex justify-between items-center mb-4">
+          <TabsList>
+            <TabsTrigger value="search">Search Results</TabsTrigger>
+            <TabsTrigger value="reading-list">Reading List</TabsTrigger>
+          </TabsList>
+          <div className="flex items-center gap-2">
+            <Select value={currentList} onValueChange={setCurrentList}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Reading List" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(readingLists).map(listName => (
+                  <SelectItem key={listName} value={listName}>{listName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={handleCreateNewList}><PlusCircle className="mr-2" />New List</Button>
+          </div>
+        </div>
         <TabsContent value="search">
           {books.length > 0 ? (
             <>
@@ -250,7 +271,7 @@ const BookRecommendationApp = () => {
                 {books.filter(filterBooks).map((book) => (
                   <Card key={book.key} className="flex flex-col">
                     <CardHeader>
-                      <CardTitle>{book.title}</CardTitle>
+                      <CardTitle className="line-clamp-2">{book.title}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex-grow">
                       <div className="flex items-center space-x-4 mb-4">
@@ -261,18 +282,20 @@ const BookRecommendationApp = () => {
                           onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book-cover.jpg' }}
                         />
                         <div>
-                          <p>Author: {book.author_name?.join(', ') || 'Unknown'}</p>
+                          <p className="line-clamp-2">Author: {book.author_name?.join(', ') || 'Unknown'}</p>
                           <p>First Published: {book.first_publish_year || 'Unknown'}</p>
-                          <p>Genre: {book.subject?.slice(0, 3).join(', ') || 'Unknown'}</p>
+                          <p className="line-clamp-2">Genre: {book.subject?.slice(0, 3).join(', ') || 'Unknown'}</p>
                         </div>
                       </div>
                     </CardContent>
-                    <CardFooter className="flex flex-wrap gap-2 justify-between">
-                      <Button onClick={() => handleAddToReadingList(book)}>
+                    <CardFooter className="flex flex-col gap-2">
+                      <Button onClick={() => handleAddToReadingList(book)} className="w-full">
                         <BookmarkPlus className="mr-2" /> Add to List
                       </Button>
-                      <AuthorSpotlight author={book.author_name?.[0]} />
-                      <BookAvailability book={book} />
+                      <div className="flex gap-2 w-full">
+                        <AuthorSpotlight author={book.author_name?.[0]} />
+                        <BookAvailability book={book} />
+                      </div>
                     </CardFooter>
                   </Card>
                 ))}
@@ -297,16 +320,24 @@ const BookRecommendationApp = () => {
           )}
         </TabsContent>
         <TabsContent value="reading-list">
-          <h2 className="text-2xl font-bold mb-4">Current Reading List: {currentList}</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Current Reading List: {currentList}</h2>
+            <div className="flex gap-2">
+              <Button onClick={handleShareReadingList}>
+                <Copy className="mr-2" /> Copy List
+              </Button>
+              <LinkedInCarouselExport readingList={readingLists[currentList] || []} listName={currentList} />
+            </div>
+          </div>
           {readingLists[currentList]?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {readingLists[currentList].map((book) => (
                 <Card key={book.key} className="flex flex-col">
                   <CardHeader>
-                    <CardTitle>{book.title}</CardTitle>
+                    <CardTitle className="line-clamp-2">{book.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 mb-4">
                       <img
                         src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
                         alt={`Cover of ${book.title}`}
@@ -314,15 +345,19 @@ const BookRecommendationApp = () => {
                         onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book-cover.jpg' }}
                       />
                       <div>
-                        <p>Author: {book.author_name?.join(', ') || 'Unknown'}</p>
+                        <p className="line-clamp-2">Author: {book.author_name?.join(', ') || 'Unknown'}</p>
                         <p>First Published: {book.first_publish_year || 'Unknown'}</p>
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <Button onClick={() => handleRemoveFromReadingList(book)} variant="destructive">
+                  <CardFooter className="flex flex-col gap-2">
+                    <Button onClick={() => handleRemoveFromReadingList(book)} variant="destructive" className="w-full">
                       <Trash2 className="mr-2" /> Remove from List
                     </Button>
+                    <div className="flex gap-2 w-full">
+                      <AuthorSpotlight author={book.author_name?.[0]} />
+                      <BookAvailability book={book} />
+                    </div>
                   </CardFooter>
                 </Card>
               ))}
@@ -335,7 +370,7 @@ const BookRecommendationApp = () => {
           )}
         </TabsContent>
       </Tabs>
-      
+
       <footer className="mt-8 text-center text-sm text-gray-500">
         Created with <a href="https://books.makr.io" className="underline">books.makr.io</a>
       </footer>

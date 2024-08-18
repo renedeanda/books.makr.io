@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -14,25 +13,42 @@ const LinkedInCarouselExport = ({ readingList, listName }) => {
       node.style.height = '1080px';
       node.style.display = 'flex';
       node.style.flexDirection = 'column';
-      node.style.justifyContent = 'center';
+      node.style.justifyContent = 'space-between';
       node.style.alignItems = 'center';
       node.style.backgroundColor = '#f0f0f0';
       node.style.padding = '40px';
       node.style.boxSizing = 'border-box';
+      node.style.fontFamily = 'Arial, sans-serif';
       
       // Fetch book cover
-      const coverResponse = await fetch(`https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg`);
-      const coverBlob = await coverResponse.blob();
-      const coverUrl = URL.createObjectURL(coverBlob);
+      let coverUrl = '/placeholder-book-cover.jpg';
+      try {
+        const coverResponse = await fetch(`https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg`);
+        if (coverResponse.ok) {
+          const coverBlob = await coverResponse.blob();
+          coverUrl = URL.createObjectURL(coverBlob);
+        }
+      } catch (error) {
+        console.error('Error fetching book cover:', error);
+      }
       
       node.innerHTML = `
-        <h1 style="font-size: 48px; margin-bottom: 20px; text-align: center; color: #333;">${listName} Reading List</h1>
-        <h2 style="font-size: 36px; margin-bottom: 10px; text-align: center; color: #555;">${index + 1}/${readingList.length}</h2>
-        <img src="${coverUrl}" alt="Book cover" style="width: 200px; height: 300px; object-fit: cover; margin-bottom: 20px;">
-        <h3 style="font-size: 32px; margin-bottom: 20px; text-align: center; color: #333;">${book.title}</h3>
-        <p style="font-size: 24px; margin-bottom: 10px; text-align: center; color: #555;">by ${book.author_name?.[0] || 'Unknown'}</p>
-        <p style="font-size: 24px; margin-bottom: 20px; text-align: center; color: #555;">Published: ${book.first_publish_year || 'Unknown'}</p>
-        <p style="font-size: 18px; position: absolute; bottom: 20px; right: 20px; color: #777;">Created with books.makr.io</p>
+        <div style="text-align: center; width: 100%;">
+          <h1 style="font-size: 48px; margin-bottom: 20px; color: #333;">${listName}</h1>
+          <h2 style="font-size: 36px; margin-bottom: 10px; color: #555;">${index + 1} of ${readingList.length}</h2>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
+          <img src="${coverUrl}" alt="Book cover" style="width: 300px; height: 450px; object-fit: cover; margin-right: 40px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+          <div style="text-align: left;">
+            <h3 style="font-size: 40px; margin-bottom: 20px; color: #333;">${book.title}</h3>
+            <p style="font-size: 32px; margin-bottom: 10px; color: #555;">by ${book.author_name?.[0] || 'Unknown'}</p>
+            <p style="font-size: 28px; margin-bottom: 20px; color: #777;">Published: ${book.first_publish_year || 'Unknown'}</p>
+            <p style="font-size: 24px; color: #999;">Genre: ${book.subject?.[0] || 'Not specified'}</p>
+          </div>
+        </div>
+        <div style="width: 100%; text-align: center; margin-top: 20px;">
+          <p style="font-size: 24px; color: #999;">Made with books.makr.io</p>
+        </div>
       `;
 
       document.body.appendChild(node);
