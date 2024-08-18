@@ -2,80 +2,61 @@
 
 import React from 'react';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import { Image } from 'lucide-react';
 
 const LinkedInCarouselExport = ({ readingList, listName }) => {
-  const generatePDF = async () => {
-    const pdf = new jsPDF({
-      orientation: 'portrait',
+
+  const generatePdf = () => {
+    const doc = new jsPDF({
       unit: 'px',
-      format: [1080, 1080],
+      format: 'a4',
+      hotfixes: ['px_scaling']
     });
 
-    for (let i = 0; i < readingList.length; i++) {
-      const book = readingList[i];
+    readingList.forEach((book, index) => {
       const bookElement = document.getElementById(`book-${book.key}`);
       
       if (bookElement) {
-        const node = document.createElement('div');
-        node.style.width = '1080px';
-        node.style.height = '1080px';
-        node.style.display = 'flex';
-        node.style.flexDirection = 'column';
-        node.style.justifyContent = 'space-between';
-        node.style.alignItems = 'center';
-        node.style.backgroundColor = '#fdf6e3';
-        node.style.padding = '50px';
-        node.style.boxSizing = 'border-box';
-        node.style.fontFamily = "'Poppins', sans-serif";
-        node.style.color = '#2c3e50';
-        node.style.border = '10px solid #eee';
-        node.style.borderRadius = '20px';
-        node.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1)';
+        doc.setFillColor(255, 236, 211);
+        doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
 
-        const bookClone = bookElement.cloneNode(true);
-        bookClone.style.width = '320px';
-        bookClone.style.height = '480px';
-        bookClone.style.marginRight = '40px';
-        bookClone.style.borderRadius = '15px';
-        bookClone.style.boxShadow = '0 8px 16px rgba(0,0,0,0.2)';
+        doc.setTextColor('#e67e22');
+        doc.setFontSize(48);
+        doc.text(`${listName}`, 100, 80);
 
-        node.innerHTML = `
-          <div style="text-align: center; width: 100%;">
-            <h1 style="font-size: 60px; margin-bottom: 20px; color: #ff6600;">${listName}</h1>
-            <h2 style="font-size: 40px; margin-bottom: 20px;">${i + 1} of ${readingList.length}</h2>
-          </div>
-          <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
-          </div>
-          <div style="width: 100%; text-align: center; margin-top: 40px;">
-            <p style="font-size: 30px; color: #95a5a6;">Made with ❤️ by books.makr.io</p>
-          </div>
-        `;
-        node.querySelector('div:nth-child(2)').appendChild(bookClone);
+        doc.setTextColor('#333');
+        doc.setFontSize(24);
+        doc.text(`${index + 1} of ${readingList.length}`, 100, 130);
 
-        document.body.appendChild(node);
+        doc.setFontSize(36);
+        doc.text(book.title, 100, 180);
 
-        // Capture the content as an image
-        const canvas = await html2canvas(node);
-        const imgData = canvas.toDataURL('image/png');
+        const bookCover = bookElement.querySelector('img');
+        const imageCanvas = document.createElement('canvas');
+        const imageContext = imageCanvas.getContext('2d');
+        imageCanvas.width = bookCover.naturalWidth;
+        imageCanvas.height = bookCover.naturalHeight;
+        imageContext.drawImage(bookCover, 0, 0, imageCanvas.width, imageCanvas.height);
+        const imageData = imageCanvas.toDataURL('image/jpeg');
 
-        if (i > 0) {
-          pdf.addPage();
+        doc.addImage(imageData, 'JPEG', 100, 200, 150, 220);
+
+        doc.setFontSize(24);
+        doc.text(`Author: ${book.author_name?.[0] || 'Unknown'}`, 100, 450);
+        doc.text(`First Published: ${book.first_publish_year || 'Unknown'}`, 100, 490);
+
+        if (index < readingList.length - 1) {
+          doc.addPage();
         }
-        pdf.addImage(imgData, 'PNG', 0, 0, 1080, 1080);
-
-        document.body.removeChild(node);
       }
-    }
+    });
 
-    // Save the PDF
-    pdf.save(`${listName}_linkedin_carousel.pdf`);
+    doc.save(`${listName}_reading_list.pdf`);
   };
 
   return (
-    <Button onClick={generatePDF} disabled={readingList.length === 0}>
+    <Button onClick={generatePdf} disabled={readingList.length === 0}>
       <Image className="mr-2" /> Export for LinkedIn
     </Button>
   );
