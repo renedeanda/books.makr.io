@@ -17,9 +17,9 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "html-to-image": "^1.11.11",
-    "html2canvas": "^1.4.1",   // Add this line
+    "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
-    "jspdf": "^2.5.1",   // Add this line
+    "jspdf": "^2.5.1",
     "lucide-react": "^0.428.0",
     "next": "14.2.5",
     "react": "^18",
