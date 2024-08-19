@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Search, BookOpen, Sun, Moon, PlusCircle, Copy, Check, Edit, User, ShoppingCart, Trash2, BookmarkPlus } from 'lucide-react';
+import { Search, BookOpen, Sun, Moon, PlusCircle, Copy, Check, Edit, User, ShoppingCart, Trash2, BookmarkPlus, Loader } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +34,7 @@ const BookRecommendationApp = () => {
   const [totalPages, setTotalPages] = useState(0);
   const booksPerPage = 9;
   const [activeTab, setActiveTab] = useState('search');
+  const [isLoading, setIsLoading] = useState(false);
   const maxPages = 3;
   const [selectedList, setSelectedList] = useState('');
   const [renameListDialog, setRenameListDialog] = useState(false);
@@ -41,6 +42,7 @@ const BookRecommendationApp = () => {
   const [isAddToListOpen, setIsAddToListOpen] = useState(false);
   const [bookToAdd, setBookToAdd] = useState(null);
   const contentRef = useRef(); // Reference to the content section
+  const resultsRef = useRef(); // Reference to the results section
 
   const searchParamsRef = useRef();
 
@@ -71,6 +73,8 @@ const BookRecommendationApp = () => {
   }, []);
 
   const fetchBooks = async (page = 0, searchQuery = query) => {
+    setIsLoading(true);
+    setActiveTab('search'); // Set the active tab to "Search Results" when searching
     let url = `https://openlibrary.org/search.json?q=${searchQuery}&limit=${booksPerPage}&offset=${page * booksPerPage}`;
     if (genre) {
       url += `&subject=${encodeURIComponent(genre)}`;
@@ -79,6 +83,10 @@ const BookRecommendationApp = () => {
     const data = await response.json();
     setBooks(data.docs);
     setTotalPages(Math.min(maxPages, Math.ceil(data.numFound / booksPerPage)));
+    setIsLoading(false);
+    if (resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth' }); // Scroll to results section
+    }
   };
 
   const handleSearch = (e) => {
@@ -121,7 +129,7 @@ const BookRecommendationApp = () => {
   };
 
   const handleRemoveFromReadingList = (book) => {
-        const updatedList = readingLists[currentList].filter(b => b.key !== book.key);
+    const updatedList = readingLists[currentList].filter(b => b.key !== book.key);
     const updatedLists = { ...readingLists, [currentList]: updatedList };
     setReadingLists(updatedLists);
     localStorage.setItem('readingLists', JSON.stringify(updatedLists));
@@ -192,10 +200,10 @@ const BookRecommendationApp = () => {
         <DialogHeader>
           <DialogTitle>{author}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div         className="space-y-4">
           <p>Find more about this author:</p>
           <div className="flex space-x-2">
-                        <Button onClick={() => window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(author)}`, '_blank')}>
+            <Button onClick={() => window.open(`https://en.wikipedia.org/wiki/${encodeURIComponent(author)}`, '_blank')}>
               Wikipedia
             </Button>
             <Button onClick={() => window.open(`https://www.goodreads.com/search?q=${encodeURIComponent(author)}`, '_blank')}>
@@ -347,8 +355,12 @@ const BookRecommendationApp = () => {
                   </div>
                 </div>
 
-                <TabsContent value="search">
-                  {books.length > 0 ? (
+                <TabsContent value="search" ref={resultsRef}>
+                  {isLoading ? (
+                    <div className="flex justify-center items-center py-10">
+                      <Loader className="animate-spin h-10 w-10 text-gray-400" />
+                    </div>
+                  ) : books.length > 0 ? (
                     <>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {books.filter(filterBooks).map((book) => (
@@ -387,7 +399,7 @@ const BookRecommendationApp = () => {
                         nextLabel={"Next →"}
                         pageCount={totalPages}
                         onPageChange={handlePageChange}
-                        containerClassName={"pagination flex justify-center space-x-2 mt-4"}
+                        containerClassName={"pagination flex justify-center space-x-2                         mt-4"}
                         previousLinkClassName={"px-3 py-2 bg-blue-500 text-white rounded"}
                         nextLinkClassName={"px-3 py-2 bg-blue-500 text-white rounded"}
                         disabledClassName={"opacity-50 cursor-not-allowed"}
