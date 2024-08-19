@@ -374,7 +374,7 @@ const BookRecommendationApp = () => {
                                   src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
                                   alt={`Cover of ${book.title}`}
                                   className="w-24 h-36 object-cover"
-                                  onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book-cover.jpg' }}
+                                  onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book-cover.svg' }}
                                 />
                                 <div>
                                   <p className="line-clamp-2">Author: {book.author_name?.join(', ') || 'Unknown'}</p>
@@ -437,7 +437,7 @@ const BookRecommendationApp = () => {
                                 src={`https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`}
                                 alt={`Cover of ${book.title}`}
                                 className="w-24 h-36 object-cover"
-                                onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book-cover.jpg' }}
+                                onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-book-cover.svg' }}
                               />
                               <div>
                                 <p className="line-clamp-2">Author: {book.author_name?.join(', ') || 'Unknown'}</p>
