@@ -493,9 +493,6 @@ const BookRecommendationApp = () => {
               </Dialog>
 
               <footer className="mt-8 text-center text-sm text-gray-500 px-4">
-                <p className="mt-4">
-                  Crafted with 🧡 + 🤖 by René
-                </p>
               </footer>
             </div>
           );
